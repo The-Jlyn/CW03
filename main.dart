@@ -1,122 +1,305 @@
+// import 'package:flutter/material.dart';
+// void main() {
+//   runApp(MaterialApp(
+//     home: DigitalPetApp(),
+//   ));
+// }
+// class DigitalPetApp extends StatefulWidget {
+//   @override
+//   _DigitalPetAppState createState() => _DigitalPetAppState();
+// }
+// class _DigitalPetAppState extends State<DigitalPetApp> {
+//   String petName = "Your Pet";
+//   int happinessLevel = 50;
+//   int hungerLevel = 50;
+// // Function to increase happiness and update hunger when playing with
+// // the pet
+//   void _playWithPet() {
+//     setState(() {
+//       happinessLevel = (happinessLevel + 10).clamp(0, 100);
+//       _updateHunger();
+//     });
+//   }
+// // Function to decrease hunger and update happiness when feeding the
+// // pet
+//   void _feedPet() {
+//     setState(() {
+//       hungerLevel = (hungerLevel - 10).clamp(0, 100);
+//       _updateHappiness();
+//     });
+//   }
+// // Update happiness based on hunger level
+//   void _updateHappiness() {
+//     if (hungerLevel < 30) {
+//       happinessLevel = (happinessLevel - 20).clamp(0, 100);
+//     } 
+//     else {
+//     happinessLevel = (happinessLevel + 10).clamp(0, 100);
+//     }
+// }
+// // Increase hunger level
+//   void _updateHunger() {
+//     hungerLevel = (hungerLevel + 5).clamp(0, 100);
+// if (hungerLevel > 100) {
+// hungerLevel = 100;
+// happinessLevel = (happinessLevel - 20).clamp(0, 100);
+// }
+// }
+// @override
+// Widget build(BuildContext context) {
+//   return Scaffold(
+//     appBar: AppBar(
+//       title: Text('Digital Pet'),
+//     ),
+//     body: Center(
+//       child: Column(
+//         mainAxisAlignment: MainAxisAlignment.center,
+//         children: <Widget>[
+//           const Text.rich(
+//             TextSpan(
+//               text: 'mood:', // default text style
+//               children: <TextSpan>[
+//               TextSpan(text: ' beautiful ', style: TextStyle(fontStyle: FontStyle.italic)),
+//               // TextSpan(text: 'world', style: TextStyle(fontWeight: FontWeight.bold)),
+//                 ],
+//               ),
+//             ),
+//           Text(
+//             'Name: $petName',
+//             style: TextStyle(fontSize: 20.0),
+//           ),
+//           SizedBox(height: 16.0),
+//           Text(
+//             'Happiness Level: $happinessLevel',
+//             style: TextStyle(fontSize: 20.0),
+//           ),
+//           SizedBox(height: 16.0),
+//           Text(
+//               'Hunger Level: $hungerLevel',
+//               style: TextStyle(fontSize: 20.0),
+//           ),
+//           SizedBox(height: 32.0),
+//           ElevatedButton(
+//             onPressed: _playWithPet,
+//             child: Text('Play with Your Pet'),
+//           ),
+//           SizedBox(height: 16.0),
+//           ElevatedButton(
+//             onPressed: _feedPet,
+//             child: Text('Feed Your Pet'),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }
+  
+
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'dart:async';
 
 void main() {
-  runApp(MyApp());
+  runApp(MaterialApp(
+    home: DigitalPetApp(),
+  ));
 }
 
-class MyApp extends StatelessWidget {
+class DigitalPetApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DrawingApp(),
+  _DigitalPetAppState createState() => _DigitalPetAppState();
+}
+
+class _DigitalPetAppState extends State<DigitalPetApp> {
+  String petName = "Your Pet";
+  int happinessLevel = 50;
+  int hungerLevel = 50;
+  Color petColor = Colors.yellow;
+  String moodText = "Neutral";
+  Timer? hungerTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Start the timer for automatic hunger increase
+    hungerTimer = Timer.periodic(Duration(seconds: 30), (timer) {
+      _increaseHungerAutomatically();
+    });
+  }
+
+  @override
+  void dispose() {
+    hungerTimer?.cancel();
+    super.dispose();
+  }
+
+  // Function to increase happiness and update hunger when playing with the pet
+  void _playWithPet() {
+    setState(() {
+      happinessLevel = (happinessLevel + 10).clamp(0, 100);
+      hungerLevel = (hungerLevel + 5).clamp(0, 100); // Inline hunger update
+      _updateHappiness();
+      _updatePetColor();
+      _updateMoodText();
+    });
+  }
+
+  // Function to decrease hunger and update happiness when feeding the pet
+  void _feedPet() {
+    setState(() {
+      hungerLevel = (hungerLevel - 10).clamp(0, 0);
+      _updateHappiness();
+      _updatePetColor();
+      _updateMoodText();
+    });
+  }
+
+  // Automatically increase hunger level
+  void _increaseHungerAutomatically() {
+    setState(() {
+      hungerLevel = (hungerLevel + 5).clamp(0, 100);
+      _updateHappiness();
+      _updatePetColor();
+      _updateMoodText();
+      _checkGameOver();
+    });
+  }
+
+  // Update happiness based on hunger level
+  void _updateHappiness() {
+    if (hungerLevel > 70) {
+      happinessLevel = (happinessLevel - 20).clamp(0, 100);
+    } else {
+      happinessLevel = (happinessLevel + 10).clamp(0, 100);
+    }
+  }
+
+  // Update pet color based on happiness level
+  void _updatePetColor() {
+    if (happinessLevel > 70) {
+      petColor = Colors.green;
+    } else if (happinessLevel >= 30) {
+      petColor = Colors.yellow;
+    } else {
+      petColor = Colors.red;
+    }
+  }
+
+  // Update mood text based on happiness level
+  void _updateMoodText() {
+    if (happinessLevel > 70) {
+      moodText = "Happy 😊";
+    } else if (happinessLevel >= 30) {
+      moodText = "Neutral 😐";
+    } else {
+      moodText = "Unhappy 😢";
+    }
+  }
+
+  // Check for game over condition
+  void _checkGameOver() {
+    if (hungerLevel >= 100 && happinessLevel <= 10) {
+      _showGameOverDialog();
+      hungerTimer?.cancel();
+    }
+  }
+
+  // Show game over dialog
+  void _showGameOverDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Game Over"),
+          content: Text("Your pet is too hungry and unhappy!"),
+          actions: [
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+                _resetPetStatus();
+              },
+            ),
+          ],
+        );
+      },
     );
   }
-}
 
-class DrawingApp extends StatefulWidget {
-  @override
-  _DrawingAppState createState() => _DrawingAppState();
-}
+  // Function to reset happiness and hunger levels
+  void _resetPetStatus() {
+    setState(() {
+      happinessLevel = 50;
+      hungerLevel = 50;
+      petColor = Colors.yellow;
+      moodText = "Neutral";
+    });
+  }
 
-class _DrawingAppState extends State<DrawingApp> {
-  List<List<Offset>> lines = []; // Use a list of lists for each line
+  // Function to set a custom name for the pet
+  void _setPetName(String name) {
+    setState(() {
+      petName = name;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Drawing App'),
+        title: Text('Digital Pet'),
       ),
-      body: GestureDetector(
-        onPanUpdate: (details) {
-          setState(() {
-            RenderBox renderBox = context.findRenderObject() as RenderBox;
-            final localPosition =
-                renderBox.globalToLocal(details.globalPosition);
-            if (lines.isEmpty || lines.last.isEmpty) {
-              lines.add([localPosition]);
-            } else {
-              lines.last.add(localPosition);
-            }
-          });
-        },
-        onPanEnd: (_) {
-          setState(() {
-            lines.add([]);
-          });
-        },
-        child: CustomPaint(
-          painter: MyPainter(lines),
-          size: Size.infinite,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Container(
+              width: 100,
+              height: 100,
+              color: petColor,
+              child: Center(child: Text(petName, style: TextStyle(color: Colors.white))),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'Happiness Level: $happinessLevel',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'Hunger Level: $hungerLevel',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 16.0),
+            Text(
+              'Mood: $moodText',
+              style: TextStyle(fontSize: 20.0),
+            ),
+            SizedBox(height: 32.0),
+            ElevatedButton(
+              onPressed: _playWithPet,
+              child: Text('Play with Your Pet'),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _feedPet,
+              child: Text('Feed Your Pet'),
+            ),
+            SizedBox(height: 16.0),
+            ElevatedButton(
+              onPressed: _resetPetStatus,
+              child: Text('Reset Pet Status'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.red,
+              ),
+            ),
+            SizedBox(height: 16.0),
+            TextField(
+              decoration: InputDecoration(labelText: "Enter Pet Name"),
+              onSubmitted: _setPetName,
+            ),
+          ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          setState(() {
-            lines.clear();
-          });
-        },
-        child: Icon(Icons.clear),
-      ),
     );
   }
 }
-
-class MyPainter extends CustomPainter {
-  final List<List<Offset>> lines;
-
-  MyPainter(this.lines);
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    Paint paint = Paint()
-      ..color = Colors.blue
-      ..strokeCap = StrokeCap.round
-      ..strokeWidth = 5.0;
-    for (final line in lines) {
-      for (int i = 0; i < line.length - 1; i++) {
-        canvas.drawLine(line[i], line[i + 1], paint);
-      }
-    }
-  
-    
-    Paint facePaint = Paint()..color = Colors.yellow;
-    final faceRadius = size.width / 2;
-    canvas.drawCircle(
-      Offset(size.width / 2, size.height / 2),
-      faceRadius,
-      facePaint,
-    );
-
-    Paint eyePaint = Paint()..color = Colors.blue;
-    final eyeRadius = faceRadius / 5;
-    canvas.drawCircle(
-      Offset(size.width * 0.3, size.height * 0.4),
-      eyeRadius,
-      eyePaint,
-    );
-    canvas.drawCircle(
-      Offset(size.width * 0.7, size.height * 0.4),
-      eyeRadius,
-      eyePaint,
-    );
-
-    // final rect = Rect.fromLTRB(50, 100, 250, 200);
-    var center = const Offset(200.0, 200.0);
-    var rectangle = Rect.fromCenter(center: center, width: 100.0, height: 50.0);
-    final startAngle = 2 *math.pi ;
-    final sweepAngle = math.pi;
-    final useCenter = false;
-    final mouthPaint = Paint()..color = Colors.black
-    ..strokeWidth = 4
-    ..style = PaintingStyle.stroke;
-    final mouthRadius = faceRadius / 5;
-    canvas.drawArc(rectangle, startAngle, sweepAngle, false, mouthPaint);
-  }
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) {
-    return true;
-  }
-}
-
